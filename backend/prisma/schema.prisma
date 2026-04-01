@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum PlanType {
+  VPS
+  VDS
+  MINECRAFT
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  username  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  reviews   Review[]
+  orders    Order[]
+}
+
+model Plan {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      PlanType
+  ram       String
+  cpu       String
+  storage   String
+  priceInr  Float
+  features  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  transactionId  String
+  paymentEmail   String
+  screenshotPath String
+  status         OrderStatus @default(PENDING)
+  amountInr      Float
+  createdAt      DateTime    @default(now())
+  userId         Int
+  planId         Int
+  user           User        @relation(fields: [userId], references: [id])
+  plan           Plan        @relation(fields: [planId], references: [id])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  message   String
+  rating    Int
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Link {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  label String
+  url   String
+}
+
+model Setting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
